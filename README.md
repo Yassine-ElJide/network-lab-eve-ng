@@ -53,8 +53,6 @@ Cleaned configs (passwords and SSH keys removed) in [`configs/`](configs):
 | NAT translations | `show ip nat translations` | Inside-local → inside-global entries |
 | ACL enforcement | Users → Servers RDP/SSH | Blocked; web permitted |
 
-_Fill observed output / screenshots after running._
-
 ## What I learned
 - Router-on-a-stick vs an L3 switch: trade-offs in throughput and simplicity.
 - An ACL applied on the wrong interface or direction silently does nothing: a standard/extended ACL is checked against the source of traffic entering that interface.
