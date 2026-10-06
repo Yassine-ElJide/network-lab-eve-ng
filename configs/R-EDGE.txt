@@ -1,0 +1,43 @@
+! R-EDGE - internet edge: NAT overload + edge ACL + OSPF
+! Passwords removed for publication.
+hostname R-EDGE
+!
+! Inside (to core)
+interface GigabitEthernet0/1
+ description To R-CORE
+ ip address 10.0.0.2 255.255.255.252
+ ip nat inside
+!
+! Outside (to ISP)
+interface GigabitEthernet0/0
+ description To ISP
+ ip address dhcp
+ ip nat outside
+ ip access-group EDGE-IN in
+!
+! OSPF with the core; advertise default toward inside
+router ospf 1
+ router-id 2.2.2.2
+ network 10.0.0.0 0.0.0.3 area 0
+ default-information originate
+!
+ip route 0.0.0.0 0.0.0.0 GigabitEthernet0/0
+!
+! NAT (PAT / overload) for internal subnets
+ip access-list standard NAT-INSIDE
+ permit 10.10.0.0 0.0.255.255
+!
+ip nat inside source list NAT-INSIDE interface GigabitEthernet0/0 overload
+!
+! Inbound edge ACL: drop spoofed/bogon and private sources from outside,
+! permit established return traffic.
+ip access-list extended EDGE-IN
+ deny   ip 10.0.0.0 0.255.255.255 any
+ deny   ip 172.16.0.0 0.15.255.255 any
+ deny   ip 192.168.0.0 0.0.255.255 any
+ deny   ip 127.0.0.0 0.255.255.255 any
+ permit tcp any any established
+ permit icmp any any echo-reply
+ deny   ip any any log
+!
+end

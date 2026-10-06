@@ -1,0 +1,51 @@
+! SW-ACCESS - access switch (VLANs + trunk)
+! Passwords removed for publication.
+hostname SW-ACCESS
+!
+vlan 10
+ name USERS
+vlan 20
+ name SERVERS
+vlan 99
+ name MGMT
+!
+! Trunk to R-CORE (router-on-a-stick)
+interface GigabitEthernet0/0
+ description Trunk to R-CORE
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,99
+!
+! Access ports
+interface range GigabitEthernet0/1 - 2
+ description Users
+ switchport mode access
+ switchport access vlan 10
+ spanning-tree portfast
+!
+interface range GigabitEthernet0/3 - 4
+ description Servers
+ switchport mode access
+ switchport access vlan 20
+ spanning-tree portfast
+!
+! Management SVI
+interface Vlan99
+ description Management
+ ip address 10.10.99.2 255.255.255.0
+!
+ip default-gateway 10.10.99.1
+!
+! Harden unused ports
+interface range GigabitEthernet0/5 - 10
+ shutdown
+!
+line vty 0 4
+ transport input ssh
+ access-class MGMT-ONLY in
+!
+ip access-list standard MGMT-ONLY
+ permit 10.10.99.0 0.0.0.255
+ deny   any log
+!
+end
