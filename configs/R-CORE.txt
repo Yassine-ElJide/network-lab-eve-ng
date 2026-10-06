@@ -40,7 +40,7 @@ router ospf 1
  network 10.10.99.0 0.0.0.255 area 0
  network 10.0.0.0 0.0.0.3 area 0
 !
-! Users (VLAN 10) may reach servers on web ports only; SSH/RDP to servers blocked.
+! Users (VLAN 10) may reach servers on web ports and ping them; SSH/RDP and everything else blocked.
 ! Applied inbound on the Users sub-interface (closest to the source).
 ip access-list extended USERS-TO-SERVERS
  remark applied inbound on Gi0/0.10 (Users)
@@ -48,6 +48,7 @@ ip access-list extended USERS-TO-SERVERS
  deny   tcp 10.10.10.0 0.0.0.255 10.10.20.0 0.0.0.255 eq 3389
  permit tcp 10.10.10.0 0.0.0.255 10.10.20.0 0.0.0.255 eq 80
  permit tcp 10.10.10.0 0.0.0.255 10.10.20.0 0.0.0.255 eq 443
+ permit icmp 10.10.10.0 0.0.0.255 10.10.20.0 0.0.0.255 echo
  deny   ip  10.10.10.0 0.0.0.255 10.10.20.0 0.0.0.255 log
  permit ip  any any
 !
