@@ -7,21 +7,21 @@ interface GigabitEthernet0/1
  description To R-CORE
  ip address 10.0.0.2 255.255.255.252
  ip nat inside
+ no shutdown
 !
-! Outside (to ISP)
+! Outside (to ISP / EVE-NG NAT cloud). DHCP also installs the default route.
 interface GigabitEthernet0/0
  description To ISP
  ip address dhcp
  ip nat outside
  ip access-group EDGE-IN in
+ no shutdown
 !
-! OSPF with the core; advertise default toward inside
+! OSPF with the core; advertise the default route toward inside
 router ospf 1
  router-id 2.2.2.2
  network 10.0.0.0 0.0.0.3 area 0
  default-information originate
-!
-ip route 0.0.0.0 0.0.0.0 GigabitEthernet0/0
 !
 ! NAT (PAT / overload) for internal subnets
 ip access-list standard NAT-INSIDE
@@ -29,13 +29,15 @@ ip access-list standard NAT-INSIDE
 !
 ip nat inside source list NAT-INSIDE interface GigabitEthernet0/0 overload
 !
-! Inbound edge ACL: drop spoofed/bogon and private sources from outside,
-! permit established return traffic.
+! Inbound edge ACL: drop loopback/bogon sources, allow DHCP from the ISP,
+! DNS replies, established TCP return traffic and ping replies.
+! RFC1918 sources are not denied here because the EVE-NG NAT cloud itself
+! uses a private range; on a real internet link add deny 10/8, 172.16/12, 192.168/16.
 ip access-list extended EDGE-IN
- deny   ip 10.0.0.0 0.255.255.255 any
- deny   ip 172.16.0.0 0.15.255.255 any
- deny   ip 192.168.0.0 0.0.255.255 any
+ permit udp any eq bootps any eq bootpc
  deny   ip 127.0.0.0 0.255.255.255 any
+ deny   ip 0.0.0.0 0.255.255.255 any
+ permit udp any eq domain any
  permit tcp any any established
  permit icmp any any echo-reply
  deny   ip any any log

@@ -1,5 +1,6 @@
-! SW-ACCESS - access switch (VLANs + trunk)
-! Passwords removed for publication.
+! SW-ACCESS - access switch (VLANs + trunk), Cisco IOSvL2
+! IOSvL2 ports come in groups of 4: Gi0/0-3, Gi1/0-3, ...
+! Passwords and SSH keys removed for publication.
 hostname SW-ACCESS
 !
 vlan 10
@@ -23,7 +24,7 @@ interface range GigabitEthernet0/1 - 2
  switchport access vlan 10
  spanning-tree portfast
 !
-interface range GigabitEthernet0/3 - 4
+interface range GigabitEthernet0/3 , GigabitEthernet1/0
  description Servers
  switchport mode access
  switchport access vlan 20
@@ -33,19 +34,22 @@ interface range GigabitEthernet0/3 - 4
 interface Vlan99
  description Management
  ip address 10.10.99.2 255.255.255.0
+ no shutdown
 !
 ip default-gateway 10.10.99.1
 !
 ! Harden unused ports
-interface range GigabitEthernet0/5 - 10
+interface range GigabitEthernet1/1 - 3
  shutdown
+!
+! SSH needs: ip domain-name, crypto key generate rsa, a local user (removed here)
+ip access-list standard MGMT-ONLY
+ permit 10.10.99.0 0.0.0.255
+ deny   any log
 !
 line vty 0 4
  transport input ssh
  access-class MGMT-ONLY in
-!
-ip access-list standard MGMT-ONLY
- permit 10.10.99.0 0.0.0.255
- deny   any log
+ login local
 !
 end

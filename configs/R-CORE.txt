@@ -8,15 +8,18 @@ interface GigabitEthernet0/0
  no shutdown
 !
 interface GigabitEthernet0/0.10
+ description Users
  encapsulation dot1Q 10
  ip address 10.10.10.1 255.255.255.0
-!
-interface GigabitEthernet0/0.20
- encapsulation dot1Q 20
- ip address 10.10.20.1 255.255.255.0
  ip access-group USERS-TO-SERVERS in
 !
+interface GigabitEthernet0/0.20
+ description Servers
+ encapsulation dot1Q 20
+ ip address 10.10.20.1 255.255.255.0
+!
 interface GigabitEthernet0/0.99
+ description Management
  encapsulation dot1Q 99
  ip address 10.10.99.1 255.255.255.0
 !
@@ -24,6 +27,7 @@ interface GigabitEthernet0/0.99
 interface GigabitEthernet0/1
  description To R-EDGE
  ip address 10.0.0.1 255.255.255.252
+ no shutdown
 !
 ! OSPF
 router ospf 1
@@ -36,10 +40,10 @@ router ospf 1
  network 10.10.99.0 0.0.0.255 area 0
  network 10.0.0.0 0.0.0.3 area 0
 !
-! Restrict Users (VLAN10) from reaching Server mgmt ports; allow web
+! Users (VLAN 10) may reach servers on web ports only; SSH/RDP to servers blocked.
+! Applied inbound on the Users sub-interface (closest to the source).
 ip access-list extended USERS-TO-SERVERS
- remark applied inbound on server sub-interface
- permit tcp 10.10.20.0 0.0.0.255 10.10.10.0 0.0.0.255 established
+ remark applied inbound on Gi0/0.10 (Users)
  deny   tcp 10.10.10.0 0.0.0.255 10.10.20.0 0.0.0.255 eq 22
  deny   tcp 10.10.10.0 0.0.0.255 10.10.20.0 0.0.0.255 eq 3389
  permit tcp 10.10.10.0 0.0.0.255 10.10.20.0 0.0.0.255 eq 80
