@@ -1,0 +1,10 @@
+# OS and editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Raw device exports: may contain passwords, keys or real addressing
+*.running-config
+*.startup-config
+*-raw.txt

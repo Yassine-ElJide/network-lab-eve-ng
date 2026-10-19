@@ -1,0 +1,6 @@
+{
+  // Long table rows and URLs are expected in documentation.
+  "MD013": false,
+  // Inline HTML is used for <br> in Mermaid labels only.
+  "MD033": false
+}
