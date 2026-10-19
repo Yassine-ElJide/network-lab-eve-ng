@@ -1,0 +1,33 @@
+name: Lint
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  configs:
+    name: No secrets in device configs
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fail on passwords, secrets, SNMP communities or keys
+        run: |
+          pattern='^\s*(enable (secret|password)|username \S+ .*(secret|password)|password |snmp-server community|key-string|key [0-9]+ |crypto pki certificate)'
+          if grep -nEi "$pattern" configs/*.txt; then
+            echo "::error::Sensitive line found in configs/. Remove it before publishing."
+            exit 1
+          fi
+          echo "No sensitive lines found."
+
+  markdown:
+    name: Markdown
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DavidAnson/markdownlint-cli2-action@v16
+        with:
+          globs: "**/*.md"
